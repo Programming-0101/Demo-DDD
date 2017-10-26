@@ -144,14 +144,8 @@ public interface IDispatch
     void Send<TCommand>(TCommand c);
 }
 
-public class DemoApplication : IDispatch
+public class CommandBus : IDispatch
 {
-    private readonly IContainer Container;
-    public DemoApplication(IContainer diContainer)
-    {
-        Container = diContainer;
-    }
-
     public void Send<TCommand>(TCommand c)
     {
         // Relay the command to the appropriate command handler (via DI Container)
