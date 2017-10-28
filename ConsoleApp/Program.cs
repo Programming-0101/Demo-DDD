@@ -1,5 +1,10 @@
 ﻿using Autofac;
 using Autofac.Core;
+using ConsoleApp.Infrastructure;
+using Enexure.MicroBus;
+using Enexure.MicroBus.Autofac;
+using StudentGrades;
+using StudentGrades.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,17 +15,41 @@ namespace ConsoleApp
 {
     class Program
     {
-        #region Driver
+        #region Starup
         static void Main(string[] args)
         {
-            var app = new Program();
+            var app = new Program(ConfigureApp());
             app.Run();
         }
 
-        public Program()
+        static IContainer ConfigureApp()
         {
             // Set up DI container using Autofac
+            var builder = new ContainerBuilder();
+            // Register my "event store"
+            builder.RegisterType<InMemoryStorage>().AsSelf().AsImplementedInterfaces();
+
+            // Register the Command Bus
+            var thisAssembly = typeof(Program).Assembly;
+            var studentGradeAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                                      .SingleOrDefault(assm => assm.GetName().Name.StartsWith("StudentGrades"));
+            var busBuilder = new BusBuilder().RegisterHandlers(thisAssembly, studentGradeAssembly);
+            builder.RegisterMicroBus(busBuilder);
+
+
+            return builder.Build();
+
         }
+        #endregion
+
+        #region Driver
+        static IContainer DiContainer;
+        public Program(IContainer container)
+        {
+            DiContainer = container;
+        }
+        InMemoryStorage Repo { get { return DiContainer.Resolve<InMemoryStorage>(); } }
+        IMicroBus Bus { get { return DiContainer.Resolve<IMicroBus>(); } }
 
         private void Run()
         {
@@ -79,18 +108,22 @@ namespace ConsoleApp
             switch (choice)
             {
                 case "1":
-                    OpenGradeBook();
+                    UI_OpenGradeBook();
                     break;
                 case "2":
-
+                    UI_AddStudent();
                     break;
                 case "3":
+                    UI_RemoveStudent();
                     break;
                 case "4":
+                    UI_EnterGrade();
                     break;
                 case "5":
+                    UI_DisplayGrades();
                     break;
                 case "6":
+                    UI_ListStudents();
                     break;
                 case "X":
                     Console.WriteLine("Thank you for trying out this demo.\n");
@@ -105,89 +138,107 @@ namespace ConsoleApp
         #endregion
 
         #region UI
-        void OpenGradeBook()
+        void NeedsGradeBook(string message = "Open a grade book before selecting this option.", bool needed = true)
         {
-            throw new NotImplementedException();
+            var hasGradebook = Repo.Keys.Count() > 0;
+            if (hasGradebook != needed)
+                throw new Exception(message);
         }
 
+        void UI_OpenGradeBook()
+        {
+            // One grade book only
+            NeedsGradeBook($"Grade book for {Repo.Keys.FirstOrDefault()} already opened.", false);
+            Console.Write("Enter Course Number (existing, or a new one): ");
+            string num = Console.ReadLine();
+            Console.Write("Enter Course Name: ");
+            string name = Console.ReadLine();
+            var cmd = new OpenGradeBook(num, name);
+            Bus.SendAsync(cmd);
+        }
+
+        void UI_AddStudent()
+        {
+            NeedsGradeBook();
+            Console.Write("Enter first name: ");
+            string first = Console.ReadLine();
+            Console.Write("Enter last name: ");
+            string last = Console.ReadLine();
+            var cmd = new AddStudent(Guid.NewGuid(), first, last);
+            Bus.SendAsync(cmd);
+        }
+
+        void UI_RemoveStudent()
+        {
+            NeedsGradeBook();
+        }
+
+        void UI_EnterGrade()
+        {
+            NeedsGradeBook();
+        }
+
+        void UI_DisplayGrades()
+        {
+            NeedsGradeBook();
+        }
+
+        void UI_ListStudents()
+        {
+            NeedsGradeBook();
+        }
         #endregion
     }
 }
 
 #region Infrastructure
-public class InMemoryStorage : IRecall
-{
-    private static IDictionary<string, IEnumerable<object>> Events = new Dictionary<string, IEnumerable<object>>();
 
-    public void AppendToHistory(string key, IEnumerable<object> events)
-    {
-        // if the key does not exist, then create the key and add the events as new events
-    }
+//public class Publisher : IPublish
+//{
+//    public Publisher(IMicroBus bus)
+//    {
+//        Bus = bus;
+//    }
+//    public IMicroBus Bus { get; set; }
+//    public void Publish<TEvent>(TEvent e)
+//    {
+//        Bus.PublishAsync(e);
+//    }
+//}
 
-    public IEnumerable<object> LoadEventHistory(string key)
-    {
-        // if the key does not exist, then return an empty list;
-        return new List<object>();
-    }
-}
+//public interface IDispatch
+//{
+//    void Send<TCommand>(TCommand c);
+//}
 
-public class Publisher : IPublish
-{
-    public void Publish<TEvent>(TEvent e)
-    {
-        // send information to all subscribers
-    }
-}
-
-public interface IDispatch
-{
-    void Send<TCommand>(TCommand c);
-}
-
-public class CommandBus : IDispatch
-{
-    public void Send<TCommand>(TCommand c)
-    {
-        // Relay the command to the appropriate command handler (via DI Container)
-    }
-}
+//public class CommandBus : IDispatch
+//{
+//    public void Send<TCommand>(TCommand c)
+//    {
+//        // Relay the command to the appropriate command handler (via DI Container)
+//    }
+//}
 #endregion
 
 #region Common Domain Interfaces
-/// <summary>
-/// IExecute describes the interface to execute commands
-/// </summary>
-/// <typeparam name="TCommand"></typeparam>
-public interface IExecute<TCommand>
-{
-    void Execute(TCommand c);
-}
+///// <summary>
+///// IExecute describes the interface to execute commands
+///// </summary>
+///// <typeparam name="TCommand"></typeparam>
+//public interface IExecute<TCommand>
+//{
+//    void Execute(TCommand c);
+//}
 
-/// <summary>
-/// IRecall describes the interface to load and save events for an aggregate
-/// </summary>
-public interface IRecall
-{
-    IEnumerable<object> LoadEventHistory(string key);
-    void AppendToHistory(string key, IEnumerable<object> events);
-}
 
-/// <summary>
-/// IPublish describes the interface to publish events to subscribers
-/// </summary>
-public interface IPublish
-{
-    void Publish<TEvent>(TEvent e);
-}
-
-/// <summary>
-/// ISubscribe describes the interface for handling events
-/// </summary>
-/// <typeparam name="TEvent"></typeparam>
-public interface ISubscribe<TEvent>
-{
-    void Handle(TEvent e);
-}
+///// <summary>
+///// ISubscribe describes the interface for handling events
+///// </summary>
+///// <typeparam name="TEvent"></typeparam>
+//public interface ISubscribe<TEvent>
+//{
+//    void Handle(TEvent e);
+//}
 #endregion
 
 #region Domain
@@ -195,66 +246,15 @@ public interface ISubscribe<TEvent>
 #endregion
 
 #region Commands
-public class OpenGradeBook
-{
-    public string CourseNumber { get; set; }
-    public string CourseName { get; set; }
-    public OpenGradeBook(string courseNumber, string courseName)
-    {
-        CourseNumber = courseNumber;
-        CourseName = courseName;
-    }
-}
 #endregion
 
 #region Events
 #endregion
 
 #region Command Handlers
-public sealed class GradingService
-    : IExecute<OpenGradeBook>
-{
-    #region Constructor and private "plumbing"
-    private readonly IRecall ES;
-    private readonly IPublish Publisher;
-    public GradingService(IRecall eventStore, IPublish publisher)
-    {
-        ES = eventStore;
-        Publisher = publisher;
-    }
-
-    private void Update(Guid id, Action<GradeBook> execute)
-    {
-        // Load event stream from the store
-        var stream = ES.LoadEventHistory(id.ToString());
-        // create new aggregate from the history
-        var ar = new GradeBook(stream);
-        // execute delegated action
-        execute(ar);
-        // append resulting changes to the stream
-        ES.AppendToHistory(id.ToString(), ar.Changes); // stream.Version, ar.Changes);
-        foreach (var change in ar.Changes)
-            Publisher.Publish(change);
-    }
-    #endregion
-
-    #region Specific Command Handlers
-    public void Execute(OpenGradeBook c)
-    {
-        throw new NotImplementedException();
-    }
-    #endregion
-}
 #endregion
 
 #region Domain Model
-internal class GradeBook
-{
-    public IEnumerable<object> Changes { get; } = new List<object>();
-    public GradeBook(IEnumerable<object> stream)
-    {
-    }
-}
 #endregion
 #endregion
 
