@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4FB57DE7-056F-4EE4-8B51-E9AC282A2C7D}</ProjectGuid>
+    <ProjectGuid>{BB1A21B5-AFA3-4437-A473-A3F36DF65F4C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>StudentGrades</RootNamespace>
-    <AssemblyName>StudentGrades</AssemblyName>
+    <RootNamespace>StudentGrades.ReadModel</RootNamespace>
+    <AssemblyName>StudentGrades.ReadModel</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -46,17 +46,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Aggregates\GradeBook.cs" />
-    <Compile Include="Commands\Handlers\GradingService.cs" />
-    <Compile Include="Commands\OpenGradeBook.cs" />
-    <Compile Include="DomainModels\Student.cs" />
-    <Compile Include="Events\GradeBookOpened.cs" />
     <Compile Include="Interfaces.cs" />
+    <Compile Include="Projections\RepoBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\StudentGrades\StudentGrades.csproj">
+      <Project>{4fb57de7-056f-4ee4-8b51-e9ac282a2c7d}</Project>
+      <Name>StudentGrades</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

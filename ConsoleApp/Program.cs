@@ -5,6 +5,7 @@ using Enexure.MicroBus;
 using Enexure.MicroBus.Autofac;
 using StudentGrades;
 using StudentGrades.Commands;
+using StudentGrades.ReadModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,8 +33,11 @@ namespace ConsoleApp
             // Register the Command Bus
             var thisAssembly = typeof(Program).Assembly;
             var studentGradeAssembly = AppDomain.CurrentDomain.GetAssemblies()
-                                      .SingleOrDefault(assm => assm.GetName().Name.StartsWith("StudentGrades"));
-            var busBuilder = new BusBuilder().RegisterHandlers(thisAssembly, studentGradeAssembly);
+                                      .SingleOrDefault(assm => assm.GetName().Name.Equals("StudentGrades"));
+            var readModelAssembly = typeof(StudentGrades.ReadModel.Student).Assembly;
+            //AppDomain.CurrentDomain.GetAssemblies()
+            //                          .SingleOrDefault(assm => assm.GetName().Name.Equals("StudentGrades.ReadModel"));
+            var busBuilder = new BusBuilder().RegisterHandlers(thisAssembly, studentGradeAssembly, readModelAssembly);
             builder.RegisterMicroBus(busBuilder);
 
 
@@ -67,6 +71,12 @@ namespace ConsoleApp
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(ex.Message);
+                    ex = ex.InnerException;
+                    while (ex != null)
+                    {
+                        Console.WriteLine($"\t{ex.Message}");
+                        ex = ex.InnerException;
+                    }
                     Console.ResetColor();
                 }
                 finally
@@ -164,7 +174,7 @@ namespace ConsoleApp
             string first = Console.ReadLine();
             Console.Write("Enter last name: ");
             string last = Console.ReadLine();
-            var cmd = new AddStudent(Guid.NewGuid(), first, last);
+            var cmd = new AddStudent(Repo.Keys.First(), Guid.NewGuid(), first, last);
             Bus.SendAsync(cmd);
         }
 
@@ -186,6 +196,12 @@ namespace ConsoleApp
         void UI_ListStudents()
         {
             NeedsGradeBook();
+            var students = Bus.QueryAsync(new GetStudents { CourseNumber = Repo.Keys.First() }).Result;
+            if (students.Count() == 0)
+                Console.WriteLine("- no students in grade book - ");
+            else
+                foreach (var person in students)
+                    Console.WriteLine($"- {person}");
         }
         #endregion
     }

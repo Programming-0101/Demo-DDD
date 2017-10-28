@@ -1,5 +1,6 @@
 ﻿using Enexure.MicroBus;
 using StudentGrades.Aggregates;
+using StudentGrades.DomainModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,9 +45,9 @@ namespace StudentGrades.Commands.Handlers
             Update(command.CourseNumber, ar => ar.OpenGradeBook(command.CourseNumber, command.CourseName));
         }
 
-        public Task Handle(AddStudent command)
+        public async Task Handle(AddStudent command)
         {
-            throw new NotImplementedException();
+            Update(command.CourseNumber, ar => ar.AddStudent(new Student { }));
         }
 
         public Task Handle(RemoveStudent command)

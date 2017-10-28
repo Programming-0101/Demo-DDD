@@ -19,15 +19,17 @@ namespace StudentGrades.Commands
     }
     public class AddStudent : ICommand
     {
-        private Guid Id;
+        public string CourseNumber { get; set; }
+        private Guid StudentId;
         private string FirstName;
         private string LastName;
 
-        public AddStudent(Guid guid, string first, string last)
+        public AddStudent(string courseNumber, Guid guid, string first, string last)
         {
-            this.Id = guid;
-            this.FirstName = first;
-            this.LastName = last;
+            CourseNumber = courseNumber;
+            StudentId = guid;
+            FirstName = first;
+            LastName = last;
         }
     }
     public class RemoveStudent : ICommand
