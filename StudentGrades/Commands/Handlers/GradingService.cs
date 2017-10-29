@@ -29,7 +29,7 @@ namespace StudentGrades.Commands.Handlers
             // Load event stream from the store
             var stream = ES.LoadEventHistory(id);
             // create new aggregate from the history
-            var ar = new GradeBook(stream);
+            var ar = new GradeBook(stream.ToArray());
             // execute delegated action
             execute(ar);
             // append resulting changes to the stream

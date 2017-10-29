@@ -8,5 +8,15 @@ namespace StudentGrades.DomainModels
 {
     internal class Student
     {
+        public string StudentId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+    }
+    internal class StudentMark
+    {
+        public string StudentId { get; set; }
+        public string EvaluationItem { get; set; }
+        public double TotalPossible { get; set; }
+        public double Earned { get; set; }
     }
 }

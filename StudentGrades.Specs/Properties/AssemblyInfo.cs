@@ -5,15 +5,14 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("StudentGrades")]
+[assembly: AssemblyTitle("StudentGrades.Specs")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Dynamic Generation Inc.")]
-[assembly: AssemblyProduct("StudentGrades")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("StudentGrades.Specs")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: InternalsVisibleTo("StudentGrades.Specs")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
@@ -21,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("4fb57de7-056f-4ee4-8b51-e9ac282a2c7d")]
+[assembly: Guid("ee267ead-e261-4882-9eb7-d73903e6135b")]
 
 // Version information for an assembly consists of the following four values:
 //

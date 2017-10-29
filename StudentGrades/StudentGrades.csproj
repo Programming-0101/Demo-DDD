@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregates\GradeBook.cs" />
+    <Compile Include="BusinessExceptions\Class1.cs" />
     <Compile Include="Commands\Handlers\GradingService.cs" />
     <Compile Include="Commands\OpenGradeBook.cs" />
     <Compile Include="DomainModels\Student.cs" />

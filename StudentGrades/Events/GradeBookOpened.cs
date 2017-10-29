@@ -10,6 +10,7 @@ namespace StudentGrades.Events
     public class GradeBookOpened : IEvent
     {
         public string CourseNumber { get; set; }
+        public string CourseName { get; set; }
     }
     public class StudentAdded : IEvent
     {
